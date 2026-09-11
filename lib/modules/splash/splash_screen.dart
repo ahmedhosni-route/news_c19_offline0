@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:news_c19_offline/core/theme/app_colors.dart';
-import 'package:news_c19_offline/modules/layout/screens/layout_screen.dart';
+import 'package:news_c19_offline/modules/layout/view/screens/layout_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});

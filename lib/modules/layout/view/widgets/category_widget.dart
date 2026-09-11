@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:news_c19_offline/core/category/app_category.dart';
 
-import '../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_colors.dart';
+
 
 class CategoryWidget extends StatelessWidget {
   AppCategory category;

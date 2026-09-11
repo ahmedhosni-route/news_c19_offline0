@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:news_c19_offline/core/category/app_category.dart';
 import 'package:news_c19_offline/modules/layout/api_manager/api_manager.dart';
 import 'package:news_c19_offline/modules/layout/api_manager/models/news_response.dart';
-import 'package:news_c19_offline/modules/layout/widgets/news_widget.dart';
 
-import '../../../core/theme/app_colors.dart';
-import '../api_manager/models/source_response.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../api_manager/models/source_response.dart';
+import '../widgets/news_widget.dart';
 
 class ArticleScreen extends StatefulWidget {
   AppCategory category;
