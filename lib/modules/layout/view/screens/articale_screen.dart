@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:news_c19_offline/core/category/app_category.dart';
-import 'package:news_c19_offline/modules/layout/api_manager/api_manager.dart';
-import 'package:news_c19_offline/modules/layout/api_manager/models/news_response.dart';
+import 'package:news_c19_offline/modules/layout/viewmodel/layout_provider.dart';
+import 'package:provider/provider.dart';
 
 import '../../../../core/theme/app_colors.dart';
-import '../../api_manager/models/source_response.dart';
 import '../widgets/news_widget.dart';
 
 class ArticleScreen extends StatefulWidget {
@@ -16,28 +15,33 @@ class ArticleScreen extends StatefulWidget {
 }
 
 class _ArticleScreenState extends State<ArticleScreen> {
-  Sources? source;
+  @override
+  void initState() {
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      Provider.of<LayoutProvider>(context, listen: false).getSources();
+    });
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        FutureBuilder(
-          future: ApiManager.getSources(widget.category.id),
-          builder: (context, snapshot) {
-            if (snapshot.hasData) {
-              var sources = snapshot.data;
-              source ??= sources?.first;
-              return Expanded(
-                child: Column(
-                  children: [
-                    DefaultTabController(
-                      length: sources?.length ?? 0,
+    return Consumer<LayoutProvider>(
+      builder: (context, provider, child) {
+        return Column(
+          children: [
+            Expanded(
+              child: Column(
+                children: [
+                  switch (provider.sourceState) {
+                    // TODO: Handle this case.
+                    ProviderState.loading => Center(
+                      child: CircularProgressIndicator(),
+                    ),
+                    // TODO: Handle this case.
+                    ProviderState.success => DefaultTabController(
+                      length: provider.sources.length ?? 0,
                       child: TabBar(
-                        onTap: (value) {
-                          source = sources![value];
-                          setState(() {});
-                        },
+                        onTap: provider.selectSource,
                         isScrollable: true,
                         tabAlignment: TabAlignment.start,
                         labelColor: AppColors.white,
@@ -54,53 +58,45 @@ class _ArticleScreenState extends State<ArticleScreen> {
                           fontWeight: FontWeight.normal,
                           fontSize: 16,
                         ),
-                        tabs: (sources ?? []).map((e) {
+                        tabs: (provider.sources).map((e) {
                           return Tab(text: e.name ?? "");
                         }).toList(),
                       ),
                     ),
-                    Expanded(
-                      child: FutureBuilder(
-                        future: ApiManager.getNews(source!.id!),
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState ==
-                              ConnectionState.waiting) {
-                            return Center(child: CircularProgressIndicator());
-                          } else if (snapshot.hasError) {
-                            return Center(
-                              child: Text(snapshot.error.toString()),
-                            );
-                          } else {
-                            List<Articles> articles = snapshot.data ?? [];
-                            return ListView.separated(
-                              itemBuilder: (context, index) {
-                                return NewsWidget(article: articles[index]);
-                              },
-                              separatorBuilder: (context, index) {
-                                return SizedBox(height: 8);
-                              },
-                              itemCount: articles.length,
-                            );
-                          }
+
+                    // TODO: Handle this case.
+                    ProviderState.error => Text(
+                      "error",
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  },
+
+                  switch (provider.newsState) {
+                    ProviderState.loading => Expanded(
+                      child: Center(child: CircularProgressIndicator()),
+                    ),
+                    ProviderState.success => Expanded(
+                      child: ListView.separated(
+                        itemBuilder: (context, index) {
+                          return NewsWidget(article: provider.articles[index]);
                         },
+                        separatorBuilder: (context, index) {
+                          return SizedBox(height: 8);
+                        },
+                        itemCount: provider.articles.length,
                       ),
                     ),
-                  ],
-                ),
-              );
-            } else if (snapshot.hasError) {
-              return Center(
-                child: Text(
-                  snapshot.error.toString(),
-                  style: TextStyle(color: AppColors.white),
-                ),
-              );
-            } else {
-              return Center(child: CircularProgressIndicator());
-            }
-          },
-        ),
-      ],
+                    ProviderState.error => Text(
+                      "error",
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  },
+                ],
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }
